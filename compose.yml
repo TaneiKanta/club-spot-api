@@ -34,6 +34,16 @@ services:
       - DB_USERNAME=${DB_USERNAME:-phper}
       - DB_PASSWORD=${DB_PASSWORD:-secret}
 
+  frontend:
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile
+    volumes:
+      - ./frontend/src:/app
+    command: 'yarn dev'
+    ports:
+      - 3000:3000
+
   web:
     build:
       context: .
