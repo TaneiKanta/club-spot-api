@@ -3,11 +3,14 @@ import { useEffect, useState} from "react";
 import { Link as Scroll } from 'react-scroll';
 import useSWR from 'swr';
 import Layout from '../components/layout';
+import { postResponse } from "../libs/response";
 
 const Home = () => {
-    const fetcher = (url) => fetch(url).then( (res) => res.json());
-    // const { data, mutate } = useSWR(`${process.env.NEXT_PUBLIC_API_URL/threads}`, fetcher);
-    const { data, mutate } = useSWR(`http://localhost:80/api/threads`, fetcher);
+    // const { data, mutate } = useSWR(`${process.env.NEXT_PUBLIC_API_URL/threads}`);
+    const { data, mutate } = useSWR(`http://localhost:80/api/threads`, {
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false,
+    });
     const threads = data?.data;
     const [responses, setResponses] = useState([]);
 
@@ -15,20 +18,10 @@ const Home = () => {
         threads && setResponses(threads.map(() => ({ name: '', email: '', content: '' })))
     }, [threads]);
 
-    console.log(data);
-
     const createResponse = async (e, threadId, index) => {
         e.preventDefault()
-        console.log(JSON.stringify(responses));
         try {
-            // const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/threads/${threadId}/responses`, {
-            const res = await fetch(`http://localhost:80/api/threads/${threadId}/responses`, {
-                method: 'POST',
-                body: JSON.stringify(responses[index]),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
+            const res = await postResponse(responses[index], threadId)
             if (!res.ok) throw new Error('レスの作成に失敗しました')
             mutate()
         } catch (err) {
